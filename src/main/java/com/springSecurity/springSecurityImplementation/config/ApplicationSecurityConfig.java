@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.jdbc.JdbcDaoImpl;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
@@ -46,8 +47,8 @@ public class ApplicationSecurityConfig {
 //    }
 
     @Bean
-    public PasswordEncoder psswordEncoder(){
-        return NoOpPasswordEncoder.getInstance();
+    public PasswordEncoder passwordEncoder(){
+        return new BCryptPasswordEncoder();
     }
 //        @Bean
 //        public InMemoryUserDetailsManager userDetailsService(){
