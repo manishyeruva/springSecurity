@@ -1,3 +1,4 @@
+
 package com.springSecurity.springSecurityImplementation.controller;
 
 import com.springSecurity.springSecurityImplementation.model.Customer;
@@ -5,11 +6,15 @@ import com.springSecurity.springSecurityImplementation.repository.CustomerReposi
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.sql.Date;
+import java.util.List;
 
 @RestController
 public class LoginController {
@@ -22,18 +27,35 @@ public class LoginController {
 
     @PostMapping("/register")
     public ResponseEntity<String> registerUser(@RequestBody Customer customer) {
+        Customer savedCustomer = null;
+        ResponseEntity response = null;
         try {
-            customer.setPwd(passwordEncoder.encode(customer.getPwd()));
-            if (customerRepository.save(customer).getId() > 0) {
-                return ResponseEntity.status(HttpStatus.CREATED
-                ).body("Given user details are succesfully created");
+            String hashPwd = passwordEncoder.encode(customer.getPwd());
+            customer.setPwd(hashPwd);
+            customer.setCreateDt(String.valueOf(new Date(System.currentTimeMillis())));
+            savedCustomer = customerRepository.save(customer);
+            if (savedCustomer.getId() > 0) {
+                response = ResponseEntity
+                        .status(HttpStatus.CREATED)
+                        .body("Given user details are successfully registered");
             }
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.CREATED
-            ).body("GAn exception occured" + e.getMessage());
+        } catch (Exception ex) {
+            response = ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An exception occured due to " + ex.getMessage());
+        }
+        return response;
+    }
 
+    @RequestMapping("/user")
+    public Customer getUserDetailsAfterLogin(Authentication authentication) {
+        List<Customer> customers = customerRepository.findByEmail(authentication.getName());
+        if (customers.size() > 0) {
+            return customers.get(0);
+        } else {
+            return null;
         }
 
-        return null;
     }
+    
 }
